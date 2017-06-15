@@ -1,0 +1,29 @@
+{
+    "name": "php-solution/jwt-security-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony bundle for use JWT for authorization, authentication.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Oleksandr Savchenko",
+            "email": "dev.olsav@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "symfony/dependency-injection": "^3.0",
+        "symfony/http-kernel": "^3.0",
+        "symfony/config": "^3.0",
+        "php-solution/jwt-bundle": "~0.1"
+    },
+    "autoload":     {
+        "psr-4": { "PhpSolution\\JwtSecurityBundle\\": "src/" }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.x-dev"
+        }
+    }
+}

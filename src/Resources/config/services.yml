@@ -1,0 +1,20 @@
+services:
+  jwt_security.user_token_provider:
+      public: false
+      class: 'PhpSolution\JwtSecurityBundle\Token\UserTokenProvider'
+      arguments: ['@jwt.manager', ~, ~]
+
+  jwt_security.request_token_extractor:
+      public: false
+      class: 'PhpSolution\JwtSecurityBundle\Token\RequestTokenExtractor'
+      arguments: [~, ~]
+
+  jwt_security.security.authenticator:
+      public: false
+      class: 'PhpSolution\JwtSecurityBundle\Security\Authenticator'
+      arguments: ['@jwt_security.user_token_provider', '@jwt_security.request_token_extractor']
+
+  jwt_security.security.authorization_handler:
+      public: false
+      class: 'PhpSolution\JwtSecurityBundle\Security\AuthorizationHandler'
+      arguments: ['@jwt_security.user_token_provider']
