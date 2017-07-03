@@ -37,28 +37,33 @@ security:
     providers:
         your_user_provider: # provider name
             ...    
-    firewalls:
+    firewalls:        
         api_login:
-            pattern:  '^/api/login'
+            pattern: '^/login'
             stateless: true
             anonymous: true
-            form_login:
-                check_path: '/api/login_check' # must be added to routing.yaml
+            json_login:
+                check_path: '/login'
                 success_handler: 'jwt_security.security.authorization_handler'
                 failure_handler: 'jwt_security.security.authorization_handler'
-                require_previous_session: false
         api_secured:
-            pattern: '^/api'
+            pattern: '^/'
             stateless: true
-            provider: 'your_user_provider' # provider name
+            provider: 'in_memory_users'
             guard:
                 authenticators: ['jwt_security.security.authenticator']
-    access_control:
-        - { path: '^/api/login', roles: 'IS_AUTHENTICATED_ANONYMOUSLY' }
-        - { path: '^/api', roles: 'IS_AUTHENTICATED_FULLY' }        
+access_control:
+    - { path: '^/login', roles: 'IS_AUTHENTICATED_ANONYMOUSLY' }
+    - { path: '^/', roles: 'IS_AUTHENTICATED_FULLY' }        
 ````
 Add route for check login:
 ````YAML
-api_login_check:
-    path: '/api/login_check'        
+api_security:
+  resource: '@JwtSecurityBundle/Resources/config/routing.yml'     
+````
+or 
+````YAML
+_jwt_security_login:
+    path: '/login'
+    defaults: { _controller: 'PhpSolution\JwtSecurityBundle\Controller\SecurityController::loginAction', _format: 'json' }
 ````

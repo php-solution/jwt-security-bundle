@@ -54,6 +54,6 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
-        return new JsonResponse(['message' => $exception ? $exception->getMessage() : ''], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => $exception ? $exception->getMessage() : ''], Response::HTTP_UNAUTHORIZED);
     }
 }
