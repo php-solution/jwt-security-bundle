@@ -57,7 +57,11 @@ class Authenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request):? array
     {
-        return ['token' => $this->requestTokenExtractor->extract($request)];
+        try {
+            return ['token' => $this->requestTokenExtractor->extract($request)];
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Authentication token was not found');
+        }
     }
 
     /**
@@ -88,7 +92,10 @@ class Authenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
-        return new JsonResponse(['message' => strtr($exception->getMessageKey(), $exception->getMessageData())], Response::HTTP_FORBIDDEN);
+        return new JsonResponse([
+            'code'    => Response::HTTP_FORBIDDEN,
+            'message' => $exception->getMessage()
+        ], Response::HTTP_FORBIDDEN);
     }
 
     /**
