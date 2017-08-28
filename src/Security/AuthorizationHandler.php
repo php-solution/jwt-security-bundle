@@ -43,7 +43,7 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
         $token = $this->userTokenProvider->getToken($token->getUser());
         $exp = $token->claims()->get(RegisteredClaims::EXPIRATION_TIME);
 
-        return new JsonResponse(['token' => $token->__toString(), 'exp' => $exp]);
+        return new JsonResponse(['token' => $token->__toString(), 'exp' => $exp->getTimestamp()]);
     }
 
     /**
