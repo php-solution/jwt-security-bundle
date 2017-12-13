@@ -11,13 +11,13 @@
     ],
     "require": {
         "php": ">=7.1",
-        "symfony/dependency-injection": "^3.2",
-        "symfony/http-kernel": "^3.2",
-        "symfony/http-foundation": "^3.2",
-        "symfony/config": "^3.2",
-        "symfony/security-core": "^3.2",
-        "symfony/security-http": "^3.2",
-        "symfony/security-guard": "^3.2",
+        "symfony/dependency-injection": ">=3.2",
+        "symfony/http-kernel": ">=3.2",
+        "symfony/http-foundation": ">=3.2",
+        "symfony/config": ">=3.2",
+        "symfony/security-core": ">=3.2",
+        "symfony/security-http": ">=3.2",
+        "symfony/security-guard": ">=3.2",
         "php-solution/jwt-bundle": "~0.1"
     },
     "autoload":     {
