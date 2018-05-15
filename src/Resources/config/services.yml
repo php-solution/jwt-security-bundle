@@ -2,7 +2,7 @@ services:
   jwt_security.user_token_provider:
       public: false
       class: 'PhpSolution\JwtSecurityBundle\Token\UserTokenProvider'
-      arguments: ['@jwt.manager', ~, ~]
+      arguments: ['@jwt.manager', ~, ~, ~]
 
   jwt_security.request_token_extractor:
       public: false

@@ -3,6 +3,7 @@
 namespace PhpSolution\JwtSecurityBundle\Security;
 
 use Lcobucci\JWT\Token\RegisteredClaims;
+use Lcobucci\JWT\Token\Plain;
 use PhpSolution\JwtSecurityBundle\Token\UserTokenProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,16 +35,19 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
 
     /**
      * @param Request        $request
-     * @param TokenInterface $token
+     * @param TokenInterface $authToken
      *
      * @return JsonResponse
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse
+    public function onAuthenticationSuccess(Request $request, TokenInterface $authToken): JsonResponse
     {
-        $token = $this->userTokenProvider->getToken($token->getUser());
-        $exp = $token->claims()->get(RegisteredClaims::EXPIRATION_TIME);
+        $authUser = $authToken->getUser();
+        $accessToken = $this->userTokenProvider->getAccessToken($authUser);
+        $refreshToken = $this->userTokenProvider->getRefreshToken($authUser, $accessToken);
+        /* @var $exp \DateTime */
+        $exp = $accessToken->claims()->get(RegisteredClaims::EXPIRATION_TIME);
 
-        return new JsonResponse(['token' => $token->__toString(), 'exp' => $exp->getTimestamp()]);
+        return $this->createAuthenticationSuccessResponse($accessToken, $refreshToken);
     }
 
     /**
@@ -55,5 +59,25 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
         return new JsonResponse(['error' => $exception ? $exception->getMessage() : ''], Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * @param Plain $accessToken
+     * @param Plain $refreshToken
+     *
+     * @return JsonResponse
+     */
+    public function createAuthenticationSuccessResponse(Plain $accessToken, Plain $refreshToken): JsonResponse
+    {
+        /* @var $exp \DateTime */
+        $exp = $accessToken->claims()->get(RegisteredClaims::EXPIRATION_TIME);
+
+        return new JsonResponse(
+            [
+                'access_token' => $accessToken->__toString(),
+                'expires_in' => $exp->getTimestamp(),
+                'refresh_token' => $refreshToken->__toString(),
+            ]
+        );
     }
 }

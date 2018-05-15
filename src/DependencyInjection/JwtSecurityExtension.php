@@ -31,7 +31,8 @@ class JwtSecurityExtension extends Extension
         }
 
         $container->getDefinition('jwt_security.user_token_provider')
-            ->setArgument(1, $config['token_provider']['token_type'])
-            ->setArgument(2, $config['token_provider']['claim_user']);
+            ->setArgument(1, $config['token_provider']['access_token_type'])
+            ->setArgument(2, $config['token_provider']['refresh_token_type'])
+            ->setArgument(3, $config['token_provider']['claim_user']);
     }
 }

@@ -22,6 +22,7 @@ class Authenticator extends AbstractGuardAuthenticator
      * @var RequestTokenExtractor
      */
     protected $requestTokenExtractor;
+
     /**
      * @var UserTokenProvider
      */
@@ -47,7 +48,10 @@ class Authenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null): JsonResponse
     {
-        return new JsonResponse(['message' => $authException ? $authException->getMessage() : ''], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(
+            ['message' => $authException ? $authException->getMessage() : ''],
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -55,7 +59,7 @@ class Authenticator extends AbstractGuardAuthenticator
      *
      * @return array
      */
-    public function getCredentials(Request $request):? array
+    public function getCredentials(Request $request): ? array
     {
         try {
             return ['token' => $this->requestTokenExtractor->extract($request)];
@@ -70,7 +74,7 @@ class Authenticator extends AbstractGuardAuthenticator
      *
      * @return null|UserInterface
      */
-    public function getUser($credentials, UserProviderInterface $userProvider):? UserInterface
+    public function getUser($credentials, UserProviderInterface $userProvider): ? UserInterface
     {
         if (!is_array($credentials) || !array_key_exists('token', $credentials) || empty($credentials['token'])) {
             throw new AuthenticationException('Undefined credentials token');
@@ -92,10 +96,13 @@ class Authenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
-        return new JsonResponse([
-            'code'    => Response::HTTP_FORBIDDEN,
-            'message' => $exception->getMessage()
-        ], Response::HTTP_FORBIDDEN);
+        return new JsonResponse(
+            [
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => $exception->getMessage(),
+            ],
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     /**
@@ -105,7 +112,7 @@ class Authenticator extends AbstractGuardAuthenticator
      *
      * @return null|Response
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey):? Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ? Response
     {
         return null;
     }

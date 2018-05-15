@@ -1,0 +1,3 @@
+_jwt_security_regenerate_access_token:
+    path: '/access-token-regenerate'
+    defaults: { _controller: 'PhpSolution\JwtSecurityBundle\Controller\TokenController::refreshAccessAction', _format: 'json' }
