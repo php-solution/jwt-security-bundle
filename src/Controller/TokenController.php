@@ -4,6 +4,7 @@ namespace PhpSolution\JwtSecurityBundle\Controller;
 
 use PhpSolution\JwtSecurityBundle\Security\AuthorizationHandler;
 use PhpSolution\JwtSecurityBundle\Token\UserTokenProvider;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

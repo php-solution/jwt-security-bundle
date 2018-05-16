@@ -43,7 +43,7 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
     {
         $authUser = $authToken->getUser();
         $accessToken = $this->userTokenProvider->getAccessToken($authUser);
-        $refreshToken = $this->userTokenProvider->getRefreshToken($authUser, $accessToken);
+        $refreshToken = $this->userTokenProvider->getRefreshToken($accessToken, $authUser);
         /* @var $exp \DateTime */
         $exp = $accessToken->claims()->get(RegisteredClaims::EXPIRATION_TIME);
 

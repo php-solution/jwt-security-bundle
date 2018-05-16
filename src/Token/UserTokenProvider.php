@@ -54,34 +54,61 @@ class UserTokenProvider
      */
     public function getAccessToken(UserInterface $user): Token\Plain
     {
-        return $this->createTokenForUser($this->accessTokenTypeName);
+        return $this->createTokenForUser($user->getUsername(), $this->accessTokenTypeName);
     }
 
     /**
-     * @param Token\Plain $accessToken
+     * @param null|UserInterface $user
+     * @param Token\Plain        $accessToken
      *
      * @return Token\Plain
      */
-    public function getRefreshToken(UserInterface $user, Token\Plain $accessToken): Token\Plain
+    public function getRefreshToken(Token\Plain $accessToken, UserInterface $user = null): Token\Plain
     {
+        if ($user instanceof UserInterface) {
+            $userName = $userName->getUsername();
+        } else {
+            $userName = $accessToken->claims()->get($this->claimUsername);
+        }
+
         return $this->createTokenForUser(
+            $userName,
             $this->refreshTokenTypeName,
             [self::CLAIM_ACCESS_TOKEN => $accessToken->__toString()]
         );
     }
 
     /**
+     * @param string $accessToken
+     *
      * @return string
      */
-    public function regenerateAccessTokenFromRefreshToken(string $accessToken, string $refreshToken): string
+    public function getRefreshTokenFromAccessToken(string $accessToken): string
     {
-        $tokenClaims = $this->getTokenClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN]);
+        $claims = $this->jwtManager->parseTokenWithClaims($accessToken, $this->accessTokenTypeName, [$this->claimUsername])->claims();
+
+        return $this->createTokenForUser(
+            $claims->get($this->claimUsername),
+            $this->refreshTokenTypeName,
+            [self::CLAIM_ACCESS_TOKEN => $accessToken->__toString()]
+        );
+    }
+
+    /**
+     * @param string $accessToken
+     * @param string $refreshToken
+     *
+     * @return Token\Plain
+     */
+    public function regenerateAccessTokenFromRefreshToken(string $accessToken, string $refreshToken): Token\Plain
+    {
+        $tokenClaims = $this->parseTokenWithClaims($refreshToken, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN])->claims();
         if ($tokenClaims->get(self::CLAIM_ACCESS_TOKEN) !== $accessToken) {
             throw new \InvalidArgumentException('Invalid refresh token');
         }
         $userName = (string) $tokenClaims->get($this->claimUsername);
 
-        return $this->createTokenForUser($userName);
+        return $this->createTokenForUser($userName, $this->accessTokenTypeName);
     }
 
     /**
@@ -91,37 +118,15 @@ class UserTokenProvider
      */
     public function getUsernameByToken(string $tokenStr): string
     {
-        $tokenClaims = $this->getTokenClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername]);
+        $tokenClaims = $this->parseTokenWithClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername])->claims();
 
         return (string) $tokenClaims->get($this->claimUsername);
     }
 
     /**
-     * @param string $tokenStr
-     * @param string $tokenType
-     * @param array  $requiredClaims
-     */
-    protected function getTokenClaims(string $tokenStr, string $tokenType, array $requiredClaims)
-    {
-        /* @var $jwtToken Token\Plain */
-        $jwtToken = $this->jwtManager->parse($tokenStr, $tokenType);
-        if (!$jwtToken instanceof Token\Plain) {
-            throw new \RuntimeException(sprintf('Token must be instanceof "%s"', Token\Plain::class));
-        }
-
-        $claims = $jwtToken->claims();
-        foreach ($requiredClaims as $claim) {
-            if (!$claims->has($claim)) {
-                throw new \RuntimeException(sprintf('Undefined claim "%s" for token', $claim));
-            }
-        }
-
-        return $claims;
-    }
-
-    /**
      * @param string $username
-     * @param array  $claims
+     * @param string $tokenTypeName
+     * @param array  $tokenClaims
      *
      * @return Token\Plain
      */
@@ -129,7 +134,7 @@ class UserTokenProvider
     {
         return $this->jwtManager->create(
             $tokenTypeName,
-            array_merge([$this->claimUsername => $user->getUsername()], $tokenClaims)
+            array_merge([$this->claimUsername => $username], $tokenClaims)
         );
     }
 }

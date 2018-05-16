@@ -18,7 +18,7 @@
         "symfony/security-core": ">=4.0",
         "symfony/security-http": ">=4.0",
         "symfony/security-guard": ">=4.0",
-        "php-solution/jwt-bundle": "~0.1"
+        "php-solution/jwt-bundle": "~0.3"
     },
     "autoload":     {
         "psr-4": { "PhpSolution\\JwtSecurityBundle\\": "src/" }
