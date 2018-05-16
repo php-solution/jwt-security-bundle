@@ -20,5 +20,7 @@ services:
       arguments: ['@jwt_security.user_token_provider']
 
   PhpSolution\JwtSecurityBundle\Controller\TokenController:
+      public: true
+      autowire: false
       class: 'PhpSolution\JwtSecurityBundle\Controller\TokenController'
       arguments: ['@jwt_security.user_token_provider', '@jwt_security.security.authorization_handler']

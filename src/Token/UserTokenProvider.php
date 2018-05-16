@@ -65,11 +65,9 @@ class UserTokenProvider
      */
     public function getRefreshToken(Token\Plain $accessToken, UserInterface $user = null): Token\Plain
     {
-        if ($user instanceof UserInterface) {
-            $userName = $userName->getUsername();
-        } else {
-            $userName = $accessToken->claims()->get($this->claimUsername);
-        }
+        $userName = $user instanceof UserInterface
+            ? $user->getUsername()
+            : $accessToken->claims()->get($this->claimUsername);
 
         return $this->createTokenForUser(
             $userName,
@@ -102,7 +100,7 @@ class UserTokenProvider
      */
     public function regenerateAccessTokenFromRefreshToken(string $accessToken, string $refreshToken): Token\Plain
     {
-        $tokenClaims = $this->parseTokenWithClaims($refreshToken, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN])->claims();
+        $tokenClaims = $this->jwtManager->parseTokenWithClaims($refreshToken, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN])->claims();
         if ($tokenClaims->get(self::CLAIM_ACCESS_TOKEN) !== $accessToken) {
             throw new \InvalidArgumentException('Invalid refresh token');
         }
