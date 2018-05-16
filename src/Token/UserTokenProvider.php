@@ -116,7 +116,7 @@ class UserTokenProvider
      */
     public function getUsernameByToken(string $tokenStr): string
     {
-        $tokenClaims = $this->parseTokenWithClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername])->claims();
+        $tokenClaims = $this->jwtManager->parseTokenWithClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername])->claims();
 
         return (string) $tokenClaims->get($this->claimUsername);
     }
