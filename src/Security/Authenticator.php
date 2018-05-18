@@ -74,7 +74,7 @@ class Authenticator extends AbstractGuardAuthenticator
      *
      * @return null|UserInterface
      */
-    public function getUser($credentials, UserProviderInterface $userProvider): ? UserInterface
+    public function getUser($credentials, UserProviderInterface $userProvider): ?UserInterface
     {
         if (!is_array($credentials) || !array_key_exists('token', $credentials) || empty($credentials['token'])) {
             throw new AuthenticationException('Undefined credentials token');
@@ -112,7 +112,7 @@ class Authenticator extends AbstractGuardAuthenticator
      *
      * @return null|Response
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ? Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ?Response
     {
         return null;
     }

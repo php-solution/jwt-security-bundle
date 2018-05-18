@@ -2,6 +2,7 @@
 
 namespace PhpSolution\JwtSecurityBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Exception\InvalidDefinitionException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -34,5 +35,26 @@ class JwtSecurityExtension extends Extension
             ->setArgument(1, $config['token_provider']['access_token_type'])
             ->setArgument(2, $config['token_provider']['refresh_token_type'])
             ->setArgument(3, $config['token_provider']['claim_user']);
+
+        $this->configureAuthHandler($config, $container);
+    }
+
+    /**
+     * @param array            $config
+     * @param ContainerBuilder $container
+     */
+    private function configureAuthHandler(array $config, ContainerBuilder $container): void
+    {
+        $exceptionMessages = [];
+        foreach ($config['auth_failure_exceptions'] as $configItem) {
+            $exceptionMessages[$configItem['exception']] = $configItem['message'];
+        }
+        $container->getDefinition('jwt_security.security.authorization_handler')
+            ->setArgument(1, $exceptionMessages);
+
+        if (array_key_exists('auth_success_response_builder', $config) && $config['auth_success_response_builder']) {
+            $responseBuilderId = $config['auth_success_response_builder'];
+            $container->setParameter('jwt_security.security.authorization_handler.response_builder', $responseBuilderId);
+        }
     }
 }

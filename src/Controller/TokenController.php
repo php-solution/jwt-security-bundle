@@ -6,6 +6,7 @@ use PhpSolution\JwtSecurityBundle\Security\AuthorizationHandler;
 use PhpSolution\JwtSecurityBundle\Token\UserTokenProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
  * Class TokenController
@@ -23,14 +24,22 @@ class TokenController
     private $authorizationHandler;
 
     /**
+     * @var UserTokenProvider
+     */
+    private $userProvider;
+
+    /**
      * TokenController constructor.
      *
-     * @param UserTokenProvider $userTokenProvider
+     * @param UserTokenProvider     $userTokenProvider
+     * @param AuthorizationHandler  $authorizationHandler
+     * @param UserProviderInterface $userProvider
      */
-    public function __construct(UserTokenProvider $userTokenProvider, AuthorizationHandler $authorizationHandler)
+    public function __construct(UserTokenProvider $userTokenProvider, AuthorizationHandler $authorizationHandler, UserProviderInterface $userProvider)
     {
         $this->userTokenProvider = $userTokenProvider;
         $this->authorizationHandler = $authorizationHandler;
+        $this->userProvider = $userProvider;
     }
 
     /**
@@ -40,12 +49,12 @@ class TokenController
      */
     public function refreshAccessAction(Request $request): JsonResponse
     {
-        $newAccessToken = $this->userTokenProvider->regenerateAccessTokenFromRefreshToken(
+        $refreshedAccessData = $this->userTokenProvider->regenerateUserAuthenticationTokenData(
             $request->get('access_token'),
-            $request->get('refresh_token')
+            $request->get('refresh_token'),
+            $this->userProvider
         );
-        $newRefreshToken = $this->userTokenProvider->getRefreshToken($newAccessToken);
 
-        return $this->authorizationHandler->createAuthenticationSuccessResponse($newAccessToken, $newRefreshToken);
+        return $this->authorizationHandler->getAuthenticationSuccessResponse($refreshedAccessData);
     }
 }

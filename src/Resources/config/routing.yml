@@ -1,3 +1,0 @@
-_jwt_security_login:
-    path: '/login'
-    defaults: { _controller: 'PhpSolution\JwtSecurityBundle\Controller\SecurityController::loginAction', _format: 'json' }

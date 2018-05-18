@@ -35,6 +35,15 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('claim_user')->cannotBeEmpty()->defaultValue('user')->end()
                     ->end()
                 ->end()
+                ->scalarNode('auth_success_response_builder')->defaultNull()->end()
+                ->arrayNode('auth_failure_exceptions')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('exception')->cannotBeEmpty()->end()
+                            ->scalarNode('message')->cannotBeEmpty()->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

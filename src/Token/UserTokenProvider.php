@@ -5,27 +5,33 @@ namespace PhpSolution\JwtSecurityBundle\Token;
 use Lcobucci\JWT\Token;
 use PhpSolution\JwtBundle\Jwt\JwtManager;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
  * Class TokenUserProvider
+ *
+ * @see https://tools.ietf.org/html/rfc7519
  */
 class UserTokenProvider
 {
-    public const CLAIM_USERNAME = 'user';
+    public const CLAIM_USERNAME     = 'user';
     public const CLAIM_ACCESS_TOKEN = 'access_token';
 
     /**
      * @var JwtManager
      */
     protected $jwtManager;
+
     /**
      * @var string
      */
     protected $claimUsername;
+
     /**
      * @var string
      */
     protected $accessTokenTypeName;
+
     /**
      * @var string
      */
@@ -52,7 +58,7 @@ class UserTokenProvider
      *
      * @return Token\Plain
      */
-    public function getAccessToken(UserInterface $user): Token\Plain
+    protected function getAccessToken(UserInterface $user): Token\Plain
     {
         return $this->createTokenForUser($user->getUsername(), $this->accessTokenTypeName);
     }
@@ -63,7 +69,7 @@ class UserTokenProvider
      *
      * @return Token\Plain
      */
-    public function getRefreshToken(Token\Plain $accessToken, UserInterface $user = null): Token\Plain
+    protected function getRefreshToken(Token\Plain $accessToken, UserInterface $user = null): Token\Plain
     {
         $userName = $user instanceof UserInterface
             ? $user->getUsername()
@@ -77,49 +83,58 @@ class UserTokenProvider
     }
 
     /**
-     * @param string $accessToken
-     *
-     * @return string
-     */
-    public function getRefreshTokenFromAccessToken(string $accessToken): string
-    {
-        $claims = $this->jwtManager->parseTokenWithClaims($accessToken, $this->accessTokenTypeName, [$this->claimUsername])->claims();
-
-        return $this->createTokenForUser(
-            $claims->get($this->claimUsername),
-            $this->refreshTokenTypeName,
-            [self::CLAIM_ACCESS_TOKEN => $accessToken->__toString()]
-        );
-    }
-
-    /**
-     * @param string $accessToken
-     * @param string $refreshToken
-     *
-     * @return Token\Plain
-     */
-    public function regenerateAccessTokenFromRefreshToken(string $accessToken, string $refreshToken): Token\Plain
-    {
-        $tokenClaims = $this->jwtManager->parseTokenWithClaims($refreshToken, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN])->claims();
-        if ($tokenClaims->get(self::CLAIM_ACCESS_TOKEN) !== $accessToken) {
-            throw new \InvalidArgumentException('Invalid refresh token');
-        }
-        $userName = (string) $tokenClaims->get($this->claimUsername);
-
-        return $this->createTokenForUser($userName, $this->accessTokenTypeName);
-    }
-
-    /**
      * @param string $tokenStr
      *
      * @return string
      */
     public function getUsernameByToken(string $tokenStr): string
     {
-        $tokenClaims = $this->jwtManager->parseTokenWithClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername])->claims();
+        /* @var $jwt Token\Plain */
+        $jwt = $this->jwtManager->parseTokenWithClaims($tokenStr, $this->accessTokenTypeName, [$this->claimUsername]);
+        $tokenClaims = $jwt->claims();
 
         return (string) $tokenClaims->get($this->claimUsername);
     }
+
+    /**
+     * @param string                $accessToken
+     * @param string                $refreshToken
+     * @param UserProviderInterface $userProvider
+     *
+     * @return UserAuthTokenData
+     */
+    public function regenerateUserAuthenticationTokenData(string $accessToken, string $refreshToken, UserProviderInterface $userProvider): UserAuthTokenData
+    {
+        /* @var $oldAccessJWT Token\Plain */
+        $oldAccessJWT = $this->jwtManager->parseTokenWithClaims($refreshToken, $this->accessTokenTypeName, [$this->claimUsername, self::CLAIM_ACCESS_TOKEN]);
+        $oldAccessJWTClaims = $oldAccessJWT->claims();
+
+        if ($oldAccessJWTClaims->get(self::CLAIM_ACCESS_TOKEN) !== $accessToken) {
+            throw new \InvalidArgumentException('Invalid refresh token');
+        }
+
+        $username = (string) $oldAccessJWTClaims->get($this->claimUsername);
+        $user = $userProvider->loadUserByUsername($username);
+
+        return $this->getUserAuthenticationTokenData($user);
+    }
+
+    /**
+     * @param UserInterface $user
+     *
+     * @return UserAuthTokenData
+     */
+    public function getUserAuthenticationTokenData(UserInterface $user): UserAuthTokenData
+    {
+        $accessToken = $this->getAccessToken($user);
+        $refreshToken = $this->getRefreshToken($accessToken, $user);
+
+        return (new UserAuthTokenData())
+            ->setUser($user)
+            ->setAccessToken($accessToken)
+            ->setRefreshToken($refreshToken);
+    }
+
 
     /**
      * @param string $username
