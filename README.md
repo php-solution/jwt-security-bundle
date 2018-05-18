@@ -30,6 +30,9 @@ jwt_security:
   token_provider:
       token_type: 'authentication'
       claim_user: 'user'
+  auth_success_response_builder: 'Core\User\AuthResponseBuilder'
+  auth_failure_exceptions:
+      - { exception: 'Symfony\Component\Security\Core\Exception\AuthenticationException', message: 'Please check your email and password.' }
 ````
 Configure security in your security.yaml:
 ````YAML

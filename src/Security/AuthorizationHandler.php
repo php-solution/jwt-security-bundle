@@ -3,7 +3,6 @@
 namespace PhpSolution\JwtSecurityBundle\Security;
 
 use Lcobucci\JWT\Token\RegisteredClaims;
-use Lcobucci\JWT\Token\Plain;
 use PhpSolution\JwtSecurityBundle\Token\UserAuthTokenData;
 use PhpSolution\JwtSecurityBundle\Token\UserTokenProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
