@@ -80,7 +80,12 @@ class Authenticator extends AbstractGuardAuthenticator
             throw new AuthenticationException('Undefined credentials token');
         }
 
-        $username = $this->userTokenProvider->getUsernameByToken($credentials['token']);
+        try {
+            $username = $this->userTokenProvider->getUsernameByToken($credentials['token']);
+        } catch (\Exception $e) {
+            throw new AuthenticationException($e->getMessage(), $e->getCode(), $e);
+        }
+
         if (empty($username)) {
             throw new AuthenticationException('Empty username for token');
         }
