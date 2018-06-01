@@ -83,7 +83,31 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
             }
         }
 
-        return new JsonResponse(['error' => $error], Response::HTTP_UNAUTHORIZED);
+        $responseData = $this->createErrorsData($error);
+        if ($this->authResponseBuilder instanceof AuthResponseBuilderInterface) {
+            $responseData = $this->authResponseBuilder->buildAuthenticationFailureResponseData($exception, $responseData);
+        }
+
+        return new JsonResponse($responseData, Response::HTTP_UNAUTHORIZED);
+    }
+
+    /**
+     * @see https://tools.ietf.org/html/rfc7807
+     *
+     * @param string $error
+     *
+     * @return array
+     */
+    protected function createErrorsData(string $error): array
+    {
+        return [
+            'type' => 'about:auth',
+            'title' => 'Unauthorized',
+            'status' => Response::HTTP_UNAUTHORIZED,
+            'detail' => [
+                'errors' => ['auth' => $error],
+            ],
+        ];
     }
 
     /**
