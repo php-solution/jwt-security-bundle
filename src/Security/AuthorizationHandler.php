@@ -70,7 +70,7 @@ class AuthorizationHandler implements AuthenticationSuccessHandlerInterface, Aut
         $error = $exception->getMessage();
         $authExceptionClass = get_class($exception);
         $prevException = $exception->getPrevious();
-        $preAuthExceptionClass = get_class($prevException);
+        $preAuthExceptionClass = is_object($prevException) ? get_class($prevException) : null;
 
         foreach ($this->exMessages as $exClass => $exMessage) {
             if (
